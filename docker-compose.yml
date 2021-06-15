@@ -1,0 +1,41 @@
+version: '3.7'
+
+services:
+  postgres:
+    container_name: postgres_container2
+    image: postgres:12.7-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - '5433:5432'
+    restart: always
+    networks:
+      - nest-poc
+
+  pgadmin:
+    container_name: pgadmin_container2
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: pgadmin
+    volumes:
+      - pgadmin:/root/.pgadmin
+    ports:
+      - '5556:80'
+    links:
+      - 'postgres:pgsql-server'
+    restart: always
+    networks:
+      - nest-poc
+
+volumes:
+  postgres:
+  pgadmin:
+
+networks:
+  nest-poc:
+    name: nest-poc
