@@ -1,5 +1,4 @@
-import { Report } from './../../entities/report.entity'
-import { User } from '@/entities'
+import { User, Report } from '@/entities'
 import { UserRepository } from '@/repositories'
 import { Test, TestingModule } from '@nestjs/testing'
 import { UserService } from './user.service'
