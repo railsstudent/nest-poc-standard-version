@@ -7,6 +7,9 @@ import { v4 } from 'uuid'
 describe('UserRepository', () => {
   let service: UserRepository
   let now: Date
+  let owner: User
+  let id: string
+  let user: User
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -15,6 +18,27 @@ describe('UserRepository', () => {
 
     service = module.get<UserRepository>(UserRepository)
     now = new Date(Date.now())
+
+    id = v4()
+    const partialUser = {
+      id,
+      name: 'John',
+      lastname: 'Doe',
+      age: 10,
+      createdAt: now,
+      updatedAt: now,
+      version: 1,
+    }
+
+    owner = {
+      ...partialUser,
+      reports: [],
+    }
+
+    user = {
+      ...partialUser,
+      reports: [],
+    }
   })
 
   it('should be defined', () => {
@@ -43,17 +67,6 @@ describe('UserRepository', () => {
 
   describe('getUser', () => {
     it('should find and return user by id', async () => {
-      const id = v4()
-      const user: User = {
-        id,
-        name: 'John',
-        lastname: 'Doe',
-        age: 10,
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
-        reports: [],
-      }
       jest.spyOn(service, 'findOne').mockImplementation(() => Promise.resolve(user))
 
       const result = await service.getUser(id)
@@ -65,53 +78,50 @@ describe('UserRepository', () => {
 
   describe('createUser', () => {
     it('should create a new user', async () => {
-      const id = v4()
-      const newUser = {
+      const dto = {
         name: 'New',
         lastname: 'User',
         age: 21,
       }
 
-      const user: User = {
-        id,
-        name: 'John',
-        lastname: 'Doe',
-        age: 10,
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
-        reports: [],
+      const newUser = {
+        ...user,
+        ...dto,
       }
-      jest.spyOn(service, 'create').mockImplementation(() => user)
-      jest.spyOn(service, 'save').mockImplementation(() => Promise.resolve(user))
 
-      const result = await service.createUser(newUser)
+      jest.spyOn(service, 'create').mockImplementation(() => newUser)
+      jest.spyOn(service, 'save').mockImplementation(() => Promise.resolve(newUser))
+
+      const result = await service.createUser(dto)
       expect(service.create).toBeCalled()
       expect(service.save).toBeCalled()
-      expect(service.create).toBeCalledWith(newUser)
-      expect(service.save).toBeCalledWith(user)
-      expect(result).toEqual(user)
+      expect(service.create).toBeCalledWith(dto)
+      expect(service.save).toBeCalledWith(service.create(dto))
+      expect(result).toEqual(newUser)
     })
   })
 
   describe('getUserWithReports', () => {
+    let getOne: any
+    let where: any
+    let leftJoinAndSelect: any
+    let createQueryBuilder: any
+
+    beforeEach(() => {
+      getOne = jest.fn(() => undefined)
+      where = jest.fn(() => ({
+        getOne,
+      }))
+      leftJoinAndSelect = jest.fn(() => ({
+        where,
+      }))
+      createQueryBuilder = () =>
+        ({
+          leftJoinAndSelect,
+        } as unknown as SelectQueryBuilder<User>)
+    })
+
     it('should return a user with reports', async () => {
-      const id = v4()
-
-      const partialUser = {
-        id,
-        name: 'John',
-        lastname: 'Doe',
-        age: 10,
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
-      }
-
-      const owner = {
-        ...partialUser,
-        reports: [],
-      }
       const reportId = v4()
       const report: Report = {
         id: reportId,
@@ -122,22 +132,12 @@ describe('UserRepository', () => {
         version: 1,
       }
 
-      const user: User = {
-        ...partialUser,
+      const userWithReports: User = {
+        ...owner,
         reports: [report],
       }
 
-      const getOne = jest.fn(() => user)
-      const where = jest.fn(() => ({
-        getOne,
-      }))
-      const leftJoinAndSelect = jest.fn(() => ({
-        where,
-      }))
-      const createQueryBuilder = () =>
-        ({
-          leftJoinAndSelect,
-        } as unknown as SelectQueryBuilder<User>)
+      getOne = jest.fn(() => userWithReports)
       jest.spyOn(service, 'createQueryBuilder').mockImplementation(createQueryBuilder)
 
       const result = await service.getUserWithReports(id)
@@ -148,7 +148,21 @@ describe('UserRepository', () => {
       expect(where).toBeCalled()
       expect(where).toBeCalledWith('user.id = :id', { id })
       expect(getOne).toBeCalled()
-      expect(result).toEqual(user)
+      expect(result).toEqual(userWithReports)
+    })
+
+    it('should return undefined', async () => {
+      jest.spyOn(service, 'createQueryBuilder').mockImplementation(createQueryBuilder)
+
+      const result = await service.getUserWithReports(id)
+      expect(service.createQueryBuilder).toBeCalled()
+      expect(service.createQueryBuilder).toBeCalledWith('user')
+      expect(leftJoinAndSelect).toBeCalled()
+      expect(leftJoinAndSelect).toBeCalledWith('user.reports', 'reports')
+      expect(where).toBeCalled()
+      expect(where).toBeCalledWith('user.id = :id', { id })
+      expect(getOne).toBeCalled()
+      expect(result).toEqual(undefined)
     })
   })
 })

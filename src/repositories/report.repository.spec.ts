@@ -8,6 +8,8 @@ describe('ReportRepository', () => {
   let service: ReportRepository
   let now: Date
   let owner: User
+  let report: Report
+  let id: string
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,6 +34,16 @@ describe('ReportRepository', () => {
       ...partialUser,
       reports: [],
     }
+
+    id = v4()
+    report = {
+      id,
+      name: 'New Report',
+      createdAt: now,
+      updatedAt: now,
+      version: 1,
+      owner,
+    }
   })
 
   it('should be defined', () => {
@@ -40,15 +52,6 @@ describe('ReportRepository', () => {
 
   describe('getReportById', () => {
     it('should find and return user by id', async () => {
-      const id = v4()
-      const report: Report = {
-        id,
-        name: 'report 1',
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
-        owner,
-      }
       jest.spyOn(service, 'findOne').mockImplementation(() => Promise.resolve(report))
 
       const result = await service.getReportById(id)
@@ -60,73 +63,64 @@ describe('ReportRepository', () => {
 
   describe('createReport', () => {
     it('should create a new report', async () => {
-      const id = v4()
-      const ownerId = v4()
-      const newReport = {
-        name: 'New Report',
-        owner: ownerId,
+      const dto = {
+        name: report.name,
+        owner: owner.id,
       }
 
-      const report: Report = {
-        id,
-        name: 'New Report',
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
-        owner,
-      }
       jest.spyOn(service, 'create').mockImplementation(() => report)
       jest.spyOn(service, 'save').mockImplementation(() => Promise.resolve(report))
 
-      const result = await service.createReport(newReport)
+      const createArg = {
+        name: report.name,
+        owner: {
+          id: report.owner.id,
+        },
+      }
+      const result = await service.createReport(dto)
       expect(service.create).toBeCalled()
       expect(service.save).toBeCalled()
-      expect(service.create).toBeCalledWith({
-        name: newReport.name,
-        owner: {
-          id: newReport.owner,
-        },
-      })
-      expect(service.save).toBeCalledWith(report)
+      expect(service.create).toBeCalledWith(createArg)
+      expect(service.save).toBeCalledWith(service.create(createArg))
       expect(result).toEqual(report)
     })
   })
 
   describe('getReportsByUserId', () => {
-    it('should return reports with same owner', async () => {
-      const reportId = v4()
-      const reportId2 = v4()
+    let getMany: any
+    let where: any
+    let innerJoin: any
+    let createQueryBuilder: any
 
-      const reports: Report[] = [
-        {
-          id: reportId,
-          name: 'Report 1',
-          createdAt: now,
-          updatedAt: now,
-          version: 1,
-          owner,
-        },
-        {
-          id: reportId2,
-          name: 'Report 2',
-          createdAt: now,
-          updatedAt: now,
-          version: 1,
-          owner,
-        },
-      ]
-
-      const getMany = jest.fn(() => reports)
-      const where = jest.fn(() => ({
+    beforeEach(() => {
+      getMany = jest.fn(() => undefined)
+      where = jest.fn(() => ({
         getMany,
       }))
-      const innerJoin = jest.fn(() => ({
+      innerJoin = jest.fn(() => ({
         where,
       }))
-      const createQueryBuilder = () =>
+      createQueryBuilder = () =>
         ({
           innerJoin,
         } as unknown as SelectQueryBuilder<Report>)
+    })
+
+    it('should return reports with same owner', async () => {
+      const reports: Report[] = [
+        {
+          ...report,
+          id: v4(),
+          name: 'Report 1',
+        },
+        {
+          ...report,
+          id: v4(),
+          name: 'Report 2',
+        },
+      ]
+
+      getMany = jest.fn(() => reports)
       jest.spyOn(service, 'createQueryBuilder').mockImplementation(createQueryBuilder)
 
       const result = await service.getReportsByUserId(owner.id)
@@ -138,6 +132,20 @@ describe('ReportRepository', () => {
       expect(where).toBeCalledWith('owner.id = :userId', { userId: owner.id })
       expect(getMany).toBeCalled()
       expect(result).toEqual(reports)
+    })
+
+    it('should return undefined', async () => {
+      jest.spyOn(service, 'createQueryBuilder').mockImplementation(createQueryBuilder)
+
+      const result = await service.getReportsByUserId(owner.id)
+      expect(service.createQueryBuilder).toBeCalled()
+      expect(service.createQueryBuilder).toBeCalledWith('report')
+      expect(innerJoin).toBeCalled()
+      expect(innerJoin).toBeCalledWith('report.owner', 'owner')
+      expect(where).toBeCalled()
+      expect(where).toBeCalledWith('owner.id = :userId', { userId: owner.id })
+      expect(getMany).toBeCalled()
+      expect(result).toEqual(undefined)
     })
   })
 })
