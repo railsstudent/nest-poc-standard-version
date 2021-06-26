@@ -7,6 +7,7 @@ import { v4 } from 'uuid'
 describe('UserService', () => {
   let service: UserService
   let spyUserRepository: UserRepository
+  let now: Date
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,6 +22,7 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService)
     spyUserRepository = module.get<UserRepository>(UserRepository)
+    now = new Date(Date.now())
   })
 
   it('should be defined', () => {
@@ -28,12 +30,6 @@ describe('UserService', () => {
   })
 
   describe('getUsers', () => {
-    let now: Date
-
-    beforeEach(() => {
-      now = new Date(Date.now())
-    })
-
     it('should return all users', async () => {
       const users: User[] = [
         { id: v4(), name: 'John', lastname: 'Doe', age: 10, createdAt: now, updatedAt: now, version: 1, reports: [] },
@@ -46,12 +42,6 @@ describe('UserService', () => {
   })
 
   describe('getUser', () => {
-    let now: Date
-
-    beforeEach(() => {
-      now = new Date(Date.now())
-    })
-
     it('should return a user', async () => {
       const id = v4()
       const user: User = {
@@ -78,12 +68,6 @@ describe('UserService', () => {
   })
 
   describe('getUserWithReports', () => {
-    let now: Date
-
-    beforeEach(() => {
-      now = new Date(Date.now())
-    })
-
     it('should return a user with reports', async () => {
       const id = v4()
       const user: User = {
@@ -117,12 +101,6 @@ describe('UserService', () => {
   })
 
   describe('createUser', () => {
-    let now: Date
-
-    beforeEach(() => {
-      now = new Date(Date.now())
-    })
-
     it('should return a new user', async () => {
       const id = v4()
       const newUserDto = {

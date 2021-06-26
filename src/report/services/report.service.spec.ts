@@ -7,6 +7,7 @@ import { ReportRepository } from '@/repositories'
 describe('ReportService', () => {
   let service: ReportService
   let spyReportRepository: ReportRepository
+  let now: Date
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -15,6 +16,7 @@ describe('ReportService', () => {
 
     service = module.get<ReportService>(ReportService)
     spyReportRepository = module.get<ReportRepository>(ReportRepository)
+    now = new Date(Date.now())
   })
 
   it('should be defined', () => {
@@ -22,12 +24,6 @@ describe('ReportService', () => {
   })
 
   describe('getReport', () => {
-    let now: Date
-
-    beforeEach(() => {
-      now = new Date(Date.now())
-    })
-
     it('should return a report by id', async () => {
       const id = v4()
       const report = <Report>{ id, name: 'Report A', createdAt: now, updatedAt: now, version: 1 }
@@ -45,12 +41,6 @@ describe('ReportService', () => {
   })
 
   describe('getReportsByUserId', () => {
-    let now: Date
-
-    beforeEach(() => {
-      now = new Date(Date.now())
-    })
-
     it('should return a user', async () => {
       const id = v4()
       const reports = [<Report>{ id, name: 'Report A', createdAt: now, updatedAt: now, version: 1 }]
@@ -69,12 +59,6 @@ describe('ReportService', () => {
   })
 
   describe('createReport', () => {
-    let now: Date
-
-    beforeEach(() => {
-      now = new Date(Date.now())
-    })
-
     it('should return a new report', async () => {
       const id = v4()
       const newReportDto = {
