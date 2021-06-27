@@ -54,6 +54,17 @@ export const expectedAllUsers = [
   },
 ]
 
+export const expectedUser = {
+  id: userId,
+  name: 'John',
+  lastname: 'Doe',
+  age: 10,
+  createdAt: now.toISOString(),
+  updatedAt: now.toISOString(),
+  version: 1,
+  reports: [],
+}
+
 const report: Report = {
   id: reportId,
   name: 'Report 1',
