@@ -1,5 +1,5 @@
 import { UserService } from './services'
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common'
 import { User } from '@/entities'
 import { CreateUserDto } from './dtos'
 
@@ -13,12 +13,12 @@ export class UserController {
   }
 
   @Get(':id/report')
-  async getUserWithReports(@Param('id') id: string): Promise<User | undefined> {
+  async getUserWithReports(@Param('id', ParseUUIDPipe) id: string): Promise<User | undefined> {
     return this.userService.getUserWithReports(id)
   }
 
   @Get(':id')
-  async getUser(@Param('id') id: string): Promise<User | undefined> {
+  async getUser(@Param('id', ParseUUIDPipe) id: string): Promise<User | undefined> {
     return this.userService.getUser(id)
   }
 

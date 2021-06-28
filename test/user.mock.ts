@@ -76,6 +76,17 @@ const report: Report = {
   } as User,
 }
 
+export const expectedUserWithReport = {
+  ...expectedUser,
+  reports: [
+    {
+      ...report,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    },
+  ],
+}
+
 export const userService = {
   getUsers: () => allUsers,
   getUser: (id: string) => allUsers.find((user) => user.id === id),

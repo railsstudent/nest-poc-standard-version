@@ -9,6 +9,7 @@ export class CreateUserDto {
   @IsString()
   lastname: string
 
+  @IsNotEmpty()
   @Min(0)
   @IsNumber()
   age: number
