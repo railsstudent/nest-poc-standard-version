@@ -1,7 +1,5 @@
-import { UserController } from './../src/user/user.controller'
-import { UserService } from './../src/user/services/user.service'
 import { Test, TestingModule } from '@nestjs/testing'
-import { HttpStatus, INestApplication, ValidationPipe, Module } from '@nestjs/common'
+import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common'
 import * as request from 'supertest'
 import {
   expectedAllUsers,
@@ -13,19 +11,16 @@ import {
   userService,
 } from './user.mock'
 import { v4 } from 'uuid'
-
-@Module({
-  controllers: [UserController],
-  providers: [UserService],
-})
-class UserModule {}
+import { UserController } from '../src/user/user.controller'
+import { UserService } from '../src/user/services/user.service'
 
 describe('UserController (e2e)', () => {
   let app: INestApplication
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [UserModule],
+      controllers: [UserController],
+      providers: [UserService],
     })
       .overrideProvider(UserService)
       .useValue(userService)

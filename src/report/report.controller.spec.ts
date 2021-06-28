@@ -1,4 +1,4 @@
-import { ReportRepository } from '@/repositories'
+import { ReportRepository, UserRepository } from '@/repositories'
 import { Test, TestingModule } from '@nestjs/testing'
 import { ReportController } from './report.controller'
 import { ReportService } from './services'
@@ -18,6 +18,7 @@ describe('ReportController', () => {
           provide: ReportRepository,
           useValue: {},
         },
+        { provide: UserRepository, useValue: {} },
       ],
     }).compile()
 

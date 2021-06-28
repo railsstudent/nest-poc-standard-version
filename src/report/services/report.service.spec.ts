@@ -1,21 +1,27 @@
-import { Report } from '@/entities'
+import { Report, User } from '@/entities'
 import { Test, TestingModule } from '@nestjs/testing'
 import { ReportService } from './report.service'
 import { v4 } from 'uuid'
-import { ReportRepository } from '@/repositories'
+import { ReportRepository, UserRepository } from '@/repositories'
 
 describe('ReportService', () => {
   let service: ReportService
   let spyReportRepository: ReportRepository
+  let spyUserRepository: UserRepository
   let now: Date
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ReportService, { provide: ReportRepository, useValue: {} }],
+      providers: [
+        ReportService,
+        { provide: ReportRepository, useValue: {} },
+        { provide: UserRepository, useValue: {} },
+      ],
     }).compile()
 
     service = module.get<ReportService>(ReportService)
     spyReportRepository = module.get<ReportRepository>(ReportRepository)
+    spyUserRepository = module.get<UserRepository>(UserRepository)
     now = new Date(Date.now())
   })
 
@@ -61,9 +67,10 @@ describe('ReportService', () => {
   describe('createReport', () => {
     it('should return a new report', async () => {
       const id = v4()
+      const ownerId = v4()
       const newReportDto = {
         name: 'Report B',
-        owner: v4(),
+        owner: ownerId,
       }
 
       const newReport = <Report>{
@@ -76,8 +83,25 @@ describe('ReportService', () => {
       }
 
       spyReportRepository.createReport = jest.fn(() => Promise.resolve(newReport))
+      spyUserRepository.findOne = jest.fn(() => Promise.resolve({ id: newReportDto.owner } as User))
       const result = await service.createReport(newReportDto)
       expect(result).toEqual(newReport)
+    })
+
+    it('should throw exception when owner is not found', async () => {
+      const ownerId = v4()
+      const newReportDto = {
+        name: 'Report B',
+        owner: ownerId,
+      }
+
+      spyUserRepository.findOne = jest.fn(() => Promise.resolve(undefined))
+
+      try {
+        await service.createReport(newReportDto)
+      } catch (ex) {
+        expect(ex.message).toEqual('Owner does not exist')
+      }
     })
   })
 })
