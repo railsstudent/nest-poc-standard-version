@@ -1,12 +1,6 @@
-import { v4 } from 'uuid'
 import { CreateUserDto } from '@/user'
 import { Report, User } from '@/entities'
-
-export const now = new Date()
-export const userId = v4()
-export const userId2 = v4()
-export const newUserId = v4()
-export const reportId = v4()
+import { newUserId, now, reportId, userId, userId2 } from './constant.mock'
 
 export const allUsers: User[] = [
   {
@@ -71,9 +65,7 @@ const report: Report = {
   createdAt: now,
   updatedAt: now,
   version: 1,
-  owner: {
-    id: userId,
-  } as User,
+  owner: allUsers[0],
 }
 
 export const expectedUserWithReport = {
@@ -81,6 +73,11 @@ export const expectedUserWithReport = {
   reports: [
     {
       ...report,
+      owner: {
+        ...allUsers[0],
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+      },
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     },

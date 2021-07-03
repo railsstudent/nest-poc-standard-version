@@ -89,7 +89,7 @@ describe('ReportRepository', () => {
   describe('getReportsByUserId', () => {
     let getMany: any
     let where: any
-    let innerJoin: any
+    let innerJoinAndSelect: any
     let createQueryBuilder: any
 
     beforeEach(() => {
@@ -97,12 +97,12 @@ describe('ReportRepository', () => {
       where = jest.fn(() => ({
         getMany,
       }))
-      innerJoin = jest.fn(() => ({
+      innerJoinAndSelect = jest.fn(() => ({
         where,
       }))
       createQueryBuilder = () =>
         ({
-          innerJoin,
+          innerJoinAndSelect,
         } as unknown as SelectQueryBuilder<Report>)
     })
 
@@ -126,8 +126,8 @@ describe('ReportRepository', () => {
       const result = await service.getReportsByUserId(owner.id)
       expect(service.createQueryBuilder).toBeCalled()
       expect(service.createQueryBuilder).toBeCalledWith('report')
-      expect(innerJoin).toBeCalled()
-      expect(innerJoin).toBeCalledWith('report.owner', 'owner')
+      expect(innerJoinAndSelect).toBeCalled()
+      expect(innerJoinAndSelect).toBeCalledWith('report.owner', 'owner')
       expect(where).toBeCalled()
       expect(where).toBeCalledWith('owner.id = :userId', { userId: owner.id })
       expect(getMany).toBeCalled()
@@ -140,8 +140,8 @@ describe('ReportRepository', () => {
       const result = await service.getReportsByUserId(owner.id)
       expect(service.createQueryBuilder).toBeCalled()
       expect(service.createQueryBuilder).toBeCalledWith('report')
-      expect(innerJoin).toBeCalled()
-      expect(innerJoin).toBeCalledWith('report.owner', 'owner')
+      expect(innerJoinAndSelect).toBeCalled()
+      expect(innerJoinAndSelect).toBeCalledWith('report.owner', 'owner')
       expect(where).toBeCalled()
       expect(where).toBeCalledWith('owner.id = :userId', { userId: owner.id })
       expect(getMany).toBeCalled()

@@ -8,6 +8,8 @@ describe('UserService', () => {
   let service: UserService
   let spyUserRepository: UserRepository
   let now: Date
+  let user: User
+  let id: string
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -15,7 +17,10 @@ describe('UserService', () => {
         UserService,
         {
           provide: UserRepository,
-          useValue: {},
+          useFactory: () => ({
+            getUser: jest.fn(() => Promise.resolve(undefined)),
+            getUserWithReports: jest.fn(() => Promise.resolve(undefined)),
+          }),
         },
       ],
     }).compile()
@@ -23,6 +28,18 @@ describe('UserService', () => {
     service = module.get<UserService>(UserService)
     spyUserRepository = module.get<UserRepository>(UserRepository)
     now = new Date(Date.now())
+
+    id = v4()
+    user = {
+      id,
+      name: 'John',
+      lastname: 'Doe',
+      age: 10,
+      createdAt: now,
+      updatedAt: now,
+      version: 1,
+      reports: [],
+    }
   })
 
   it('should be defined', () => {
@@ -43,17 +60,6 @@ describe('UserService', () => {
 
   describe('getUser', () => {
     it('should return a user', async () => {
-      const id = v4()
-      const user: User = {
-        id,
-        name: 'John',
-        lastname: 'Doe',
-        age: 10,
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
-        reports: [],
-      }
       spyUserRepository.getUser = jest.fn(() => Promise.resolve(user))
       const result = await service.getUser(id)
       expect(result).toEqual(user)
@@ -61,7 +67,6 @@ describe('UserService', () => {
 
     it('should return undefined', async () => {
       const id = v4()
-      spyUserRepository.getUser = jest.fn(() => Promise.resolve(undefined))
       const result = await service.getUser(id)
       expect(result).toBeUndefined()
     })
@@ -69,15 +74,8 @@ describe('UserService', () => {
 
   describe('getUserWithReports', () => {
     it('should return a user with reports', async () => {
-      const id = v4()
-      const user: User = {
-        id,
-        name: 'John',
-        lastname: 'Doe',
-        age: 10,
-        createdAt: now,
-        updatedAt: now,
-        version: 1,
+      const userWithReports: User = {
+        ...user,
         reports: [
           <Report>{
             id: v4(),
@@ -87,14 +85,13 @@ describe('UserService', () => {
           },
         ],
       }
-      spyUserRepository.getUserWithReports = jest.fn(() => Promise.resolve(user))
+      spyUserRepository.getUserWithReports = jest.fn(() => Promise.resolve(userWithReports))
       const result = await service.getUserWithReports(id)
-      expect(result).toEqual(user)
+      expect(result).toEqual(userWithReports)
     })
 
     it('should return undefined', async () => {
       const id = v4()
-      spyUserRepository.getUserWithReports = jest.fn(() => Promise.resolve(undefined))
       const result = await service.getUserWithReports(id)
       expect(result).toBeUndefined()
     })

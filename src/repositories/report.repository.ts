@@ -10,7 +10,7 @@ export class ReportRepository extends Repository<Report> {
 
   async getReportsByUserId(userId: string): Promise<Report[]> {
     return this.createQueryBuilder('report')
-      .innerJoin('report.owner', 'owner')
+      .innerJoinAndSelect('report.owner', 'owner')
       .where('owner.id = :userId', { userId })
       .getMany()
   }

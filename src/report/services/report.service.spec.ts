@@ -14,8 +14,19 @@ describe('ReportService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReportService,
-        { provide: ReportRepository, useValue: {} },
-        { provide: UserRepository, useValue: {} },
+        {
+          provide: ReportRepository,
+          useFactory: () => ({
+            getReportById: jest.fn(() => Promise.resolve(undefined)),
+            getReportsByUserId: jest.fn(() => Promise.resolve([])),
+          }),
+        },
+        {
+          provide: UserRepository,
+          useFactory: () => ({
+            findOne: jest.fn(() => Promise.resolve(undefined)),
+          }),
+        },
       ],
     }).compile()
 
@@ -40,7 +51,6 @@ describe('ReportService', () => {
 
     it('should return undefined', async () => {
       const id = v4()
-      spyReportRepository.getReportById = jest.fn(() => Promise.resolve(undefined))
       const result = await service.getReport(id)
       expect(result).toBeUndefined()
     })
@@ -58,7 +68,6 @@ describe('ReportService', () => {
 
     it('should return empty array', async () => {
       const id = v4()
-      spyReportRepository.getReportsByUserId = jest.fn(() => Promise.resolve([]))
       const result = await service.getReportsByUserId(id)
       expect(result).toEqual([])
     })
@@ -94,8 +103,6 @@ describe('ReportService', () => {
         name: 'Report B',
         owner: ownerId,
       }
-
-      spyUserRepository.findOne = jest.fn(() => Promise.resolve(undefined))
 
       try {
         await service.createReport(newReportDto)

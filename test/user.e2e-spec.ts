@@ -1,15 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common'
 import * as request from 'supertest'
-import {
-  expectedAllUsers,
-  expectedUser,
-  expectedUserWithReport,
-  newUserId,
-  now,
-  userId,
-  userService,
-} from './user.mock'
+import { expectedAllUsers, expectedUser, expectedUserWithReport, newUserId, now, userId, userService } from './mock'
 import { v4 } from 'uuid'
 import { UserController } from '../src/user/user.controller'
 import { UserService } from '../src/user/services/user.service'
@@ -62,7 +54,7 @@ describe('UserController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/user')
         .send(dto)
-        .expect(201)
+        .expect(HttpStatus.CREATED)
         .expect({
           ...dto,
           id: newUserId,
