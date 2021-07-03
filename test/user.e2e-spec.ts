@@ -78,7 +78,6 @@ describe('UserController (e2e)', () => {
       const dto = {
         name: 'John',
         lastname: 'Doe',
-        age: -1,
       }
       return request(app.getHttpServer()).post('/user').send(dto).expect(HttpStatus.BAD_REQUEST)
     })
